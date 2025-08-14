@@ -12,6 +12,7 @@ class ChatScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         leading: const Padding(
           padding: EdgeInsets.all(4.0),
@@ -24,39 +25,47 @@ class ChatScreen extends StatelessWidget {
         title: const Text('Jennifer'),
         centerTitle: false,
       ),
-      body: _ChatView(),
+      body: const _ChatView(),
     );
   }
 }
 
 class _ChatView extends StatelessWidget {
+  const _ChatView({super.key});
+
   @override
   Widget build(BuildContext context) {
     final chatProvider = context.watch<ChatProvider>();
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
 
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.only(
+          left: 10,
+          right: 10,
+          bottom: bottomInset + 10, // margen inferior extra
+        ),
         child: Column(
           children: [
             Expanded(
               child: ListView.builder(
                 controller: chatProvider.chatScrollController,
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 itemCount: chatProvider.messageList.length,
                 itemBuilder: (context, index) {
                   final message = chatProvider.messageList[index];
-
-                  return ( message.fromWho == FromWho.hers)
-                      ? HerMessageBumble( message: message )
-                      : MyMessageBubble( message: message );
+                  return (message.fromWho == FromWho.hers)
+                      ? HerMessageBumble(message: message)
+                      : MyMessageBubble(message: message);
                 },
               ),
             ),
-            // CAJA DE TEXTO DE MENSAJES
-            MessageFieldBox(
-              // onValue: (value)=> chatProvider.sendMessage(value),
-              onValue: chatProvider.sendMessage,
-
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: MessageFieldBox(
+                onValue: chatProvider.sendMessage,
+              ),
             ),
           ],
         ),
